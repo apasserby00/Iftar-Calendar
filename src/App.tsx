@@ -1,11 +1,10 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useState } from "react";
 import {
   CalendarDays,
   Clock3,
   MapPin,
   MoonStar,
-  Sparkles,
-  Stars,
   UserRound,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,10 +39,30 @@ const detailItems = [
 ] as const;
 
 const heroEase = [0.22, 1, 0.36, 1] as const;
+const rsvpOptions = [
+  {
+    value: "yes",
+    label: "Yes, I'll be there",
+    response: "Looking forward to seeing you there.",
+  },
+  {
+    value: "maybe",
+    label: "Insha'Allah",
+    response: "Insha'Allah, hope you can make it.",
+  },
+  {
+    value: "no",
+    label: "I can't make it",
+    response: "No problem. Maybe another time.",
+  },
+] as const;
+
+type RsvpValue = (typeof rsvpOptions)[number]["value"];
 
 function App() {
   const invite = readInviteData(window.location.search);
   const prefersReducedMotion = useReducedMotion();
+  const [selectedRsvp, setSelectedRsvp] = useState<RsvpValue | null>(null);
   const animationProps = prefersReducedMotion
     ? {}
     : {
@@ -93,9 +112,9 @@ function App() {
                   animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
                   transition={{ delay: 0.28, duration: 0.7 }}
                 >
-                  Join {invite.host} for an evening of prayer, warmth, and a table
-                  prepared with care. This page is your personal invitation to break
-                  fast together and share the spirit of Ramadan.
+                  {invite.host} would love for you to join them to break fast
+                  together. A simple evening, good company, and a warm welcome
+                  await you.
                 </motion.p>
 
                 <motion.div
@@ -151,93 +170,55 @@ function App() {
                 </motion.div>
 
                 <motion.div
-                  className="mt-8 flex flex-wrap items-center gap-3 text-sm text-amber-50/65"
-                  initial={prefersReducedMotion ? undefined : { opacity: 0 }}
-                  animate={prefersReducedMotion ? undefined : { opacity: 1 }}
-                  transition={{ delay: 0.6, duration: 0.7 }}
+                  className="mt-8 rounded-[1.75rem] border border-white/10 bg-black/10 p-4 backdrop-blur"
+                  initial={prefersReducedMotion ? undefined : { opacity: 0, y: 16 }}
+                  animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                  transition={{ delay: 0.68, duration: 0.65 }}
                 >
-                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-100/15 px-4 py-2">
-                    <Sparkles className="h-4 w-4" />
-                    Personal invitation link
+                  <p className="text-sm uppercase tracking-[0.26em] text-amber-100/60">
+                    RSVP
+                  </p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    {rsvpOptions.map((option) => {
+                      const isSelected = selectedRsvp === option.value;
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setSelectedRsvp(option.value)}
+                          className={cn(
+                            "rounded-2xl border px-4 py-3 text-sm font-medium transition duration-300",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#2a110d]",
+                            isSelected
+                              ? "border-amber-200/40 bg-amber-200/15 text-amber-50 shadow-ember"
+                              : "border-white/10 bg-white/5 text-amber-50/80 hover:border-amber-100/20 hover:bg-white/10",
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-100/15 px-4 py-2">
-                    <Stars className="h-4 w-4" />
-                    Open beautifully in WhatsApp
-                  </div>
+                  {selectedRsvp ? (
+                    <p className="mt-4 text-sm leading-6 text-amber-100/75">
+                      {
+                        rsvpOptions.find((option) => option.value === selectedRsvp)
+                          ?.response
+                      }
+                    </p>
+                  ) : (
+                    <p className="mt-4 text-sm leading-6 text-amber-100/55">
+                      A simple reply is enough.
+                    </p>
+                  )}
                 </motion.div>
               </div>
-            </div>
-
-            <div className="grid gap-6">
-              <motion.section
-                className="relative overflow-hidden rounded-[2rem] border border-amber-100/10 bg-white/10 p-6 shadow-glow backdrop-blur xl:p-8"
-                initial={prefersReducedMotion ? undefined : { opacity: 0, x: 24 }}
-                animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-                transition={{ delay: 0.25, duration: 0.75 }}
-              >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(252,211,77,0.18),transparent_44%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.12),transparent_35%)]" />
-                <div className="relative">
-                  <p className="text-sm uppercase tracking-[0.3em] text-amber-100/65">
-                    A note for you
-                  </p>
-                  <blockquote className="mt-4 font-display text-3xl leading-tight text-amber-50 sm:text-4xl">
-                    “{invite.message}”
-                  </blockquote>
-                  <p className="mt-6 text-sm leading-7 text-amber-50/70">
-                    May this evening bring ease, gratitude, and good company. Come
-                    as you are and be welcomed with warmth.
-                  </p>
-                </div>
-              </motion.section>
-
-              <motion.section
-                className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.06))] p-6 backdrop-blur xl:p-8"
-                initial={prefersReducedMotion ? undefined : { opacity: 0, x: 24 }}
-                animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-                transition={{ delay: 0.34, duration: 0.75 }}
-              >
-                <p className="text-sm uppercase tracking-[0.3em] text-amber-100/65">
-                  Invitation details
-                </p>
-                <div className="mt-4 space-y-4 text-amber-50/85">
-                  <p className="text-lg leading-8">
-                    Your place is prepared for <span className="text-amber-200">{invite.guest}</span>.
-                  </p>
-                  <p className="text-sm leading-7 text-amber-50/70">
-                    Share this link directly or open it from a WhatsApp message for a
-                    soft, full-screen invitation experience. The details are embedded in
-                    the URL so each guest can receive a personalized page.
-                  </p>
-                  <div className="rounded-2xl border border-white/10 bg-black/10 p-4 text-sm leading-6 text-amber-50/75">
-                    Example:
-                    <span className="mt-2 block break-all text-amber-200/90">
-                      ?guest={encodeURIComponent(inviteDefaults.guest)}&host=
-                      {encodeURIComponent(inviteDefaults.host)}&date=
-                      {encodeURIComponent(inviteDefaults.date)}&time=
-                      {encodeURIComponent(inviteDefaults.time)}
-                    </span>
-                  </div>
-                </div>
-              </motion.section>
             </div>
           </motion.div>
         </section>
       </main>
 
-      <AnimatePresence>
-        {!prefersReducedMotion ? (
-          <motion.div
-            className="pointer-events-none absolute inset-x-0 bottom-6 z-10 mx-auto flex w-fit items-center gap-2 rounded-full border border-amber-100/10 bg-black/20 px-4 py-2 text-xs uppercase tracking-[0.24em] text-amber-100/70 backdrop-blur"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ delay: 0.9, duration: 0.6 }}
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            Crafted to feel personal
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
     </div>
   );
 }
