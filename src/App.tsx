@@ -1,7 +1,6 @@
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import {
-  CalendarDays,
   Clock3,
   MapPin,
   MoonStar,
@@ -19,12 +18,6 @@ const detailItems = [
     accent: "from-amber-300/40 to-orange-300/10",
   },
   {
-    key: "date",
-    label: "Date",
-    icon: CalendarDays,
-    accent: "from-rose-300/35 to-amber-200/10",
-  },
-  {
     key: "time",
     label: "Iftar time",
     icon: Clock3,
@@ -39,30 +32,11 @@ const detailItems = [
 ] as const;
 
 const heroEase = [0.22, 1, 0.36, 1] as const;
-const rsvpOptions = [
-  {
-    value: "yes",
-    label: "Yes, I'll be there",
-    response: "Looking forward to seeing you there.",
-  },
-  {
-    value: "maybe",
-    label: "Insha'Allah",
-    response: "Insha'Allah, hope you can make it.",
-  },
-  {
-    value: "no",
-    label: "I can't make it",
-    response: "No problem. Maybe another time.",
-  },
-] as const;
-
-type RsvpValue = (typeof rsvpOptions)[number]["value"];
 
 function App() {
   const invite = readInviteData(window.location.search);
   const prefersReducedMotion = useReducedMotion();
-  const [selectedRsvp, setSelectedRsvp] = useState<RsvpValue | null>(null);
+  const [selectedNights, setSelectedNights] = useState<string[]>([]);
   const animationProps = prefersReducedMotion
     ? {}
     : {
@@ -70,6 +44,14 @@ function App() {
         animate: { opacity: 1, y: 0 },
         transition: { duration: 0.8, ease: heroEase },
       };
+
+  const toggleNight = (night: string) => {
+    setSelectedNights((current) =>
+      current.includes(night)
+        ? current.filter((value) => value !== night)
+        : [...current, night],
+    );
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
@@ -176,17 +158,20 @@ function App() {
                   transition={{ delay: 0.68, duration: 0.65 }}
                 >
                   <p className="text-sm uppercase tracking-[0.26em] text-amber-100/60">
-                    RSVP
+                    Which nights work for you?
                   </p>
+                  <div className="mt-2 text-sm leading-6 text-amber-100/65">
+                    Pick any that suit you.
+                  </div>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    {rsvpOptions.map((option) => {
-                      const isSelected = selectedRsvp === option.value;
+                    {invite.nights.map((night) => {
+                      const isSelected = selectedNights.includes(night);
 
                       return (
                         <button
-                          key={option.value}
+                          key={night}
                           type="button"
-                          onClick={() => setSelectedRsvp(option.value)}
+                          onClick={() => toggleNight(night)}
                           className={cn(
                             "rounded-2xl border px-4 py-3 text-sm font-medium transition duration-300",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#2a110d]",
@@ -195,21 +180,20 @@ function App() {
                               : "border-white/10 bg-white/5 text-amber-50/80 hover:border-amber-100/20 hover:bg-white/10",
                           )}
                         >
-                          {option.label}
+                          {night}
                         </button>
                       );
                     })}
                   </div>
-                  {selectedRsvp ? (
+                  {selectedNights.length > 0 ? (
                     <p className="mt-4 text-sm leading-6 text-amber-100/75">
-                      {
-                        rsvpOptions.find((option) => option.value === selectedRsvp)
-                          ?.response
-                      }
+                      {selectedNights.length === 1
+                        ? `You've marked ${selectedNights[0]}.`
+                        : `You've marked ${selectedNights.join(", ")}.`}
                     </p>
                   ) : (
                     <p className="mt-4 text-sm leading-6 text-amber-100/55">
-                      A simple reply is enough.
+                      Tap one or more nights.
                     </p>
                   )}
                 </motion.div>

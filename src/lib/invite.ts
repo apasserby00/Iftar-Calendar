@@ -1,25 +1,45 @@
 export interface InviteData {
   guest: string;
   host: string;
-  date: string;
   time: string;
   location: string;
-  message: string;
+  nights: string[];
 }
 
 export const inviteDefaults: InviteData = {
   guest: "Dear Friend",
   host: "The Rahman Family",
-  date: "Saturday, 22 March",
   time: "6:47 PM",
   location: "17 Lantern Crescent, Auburn",
-  message:
-    "We would be honoured to break fast with you and share a beautiful Ramadan evening together.",
+  nights: ["Thu, 20 March", "Sat, 22 March", "Sun, 23 March"],
 };
 
 function sanitize(value: string | null, fallback: string) {
   const trimmed = value?.trim();
   return trimmed && trimmed.length > 0 ? trimmed : fallback;
+}
+
+function readNightOptions(params: URLSearchParams) {
+  const repeatedOptions = params
+    .getAll("night")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (repeatedOptions.length > 0) {
+    return repeatedOptions;
+  }
+
+  const combinedOptions = params.get("nights");
+  if (!combinedOptions) {
+    return inviteDefaults.nights;
+  }
+
+  const parsedOptions = combinedOptions
+    .split("|")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return parsedOptions.length > 0 ? parsedOptions : inviteDefaults.nights;
 }
 
 export function readInviteData(search: string): InviteData {
@@ -28,9 +48,8 @@ export function readInviteData(search: string): InviteData {
   return {
     guest: sanitize(params.get("guest"), inviteDefaults.guest),
     host: sanitize(params.get("host"), inviteDefaults.host),
-    date: sanitize(params.get("date"), inviteDefaults.date),
     time: sanitize(params.get("time"), inviteDefaults.time),
     location: sanitize(params.get("location"), inviteDefaults.location),
-    message: sanitize(params.get("message"), inviteDefaults.message),
+    nights: readNightOptions(params),
   };
 }
