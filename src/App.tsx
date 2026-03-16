@@ -39,6 +39,8 @@ const detailItems = [
   },
 ] as const;
 
+const heroEase = [0.22, 1, 0.36, 1] as const;
+
 function App() {
   const invite = readInviteData(window.location.search);
   const prefersReducedMotion = useReducedMotion();
@@ -47,7 +49,7 @@ function App() {
     : {
         initial: { opacity: 0, y: 24 },
         animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+        transition: { duration: 0.8, ease: heroEase },
       };
 
   return (
@@ -110,7 +112,6 @@ function App() {
                       <Card
                         key={item.key}
                         className="border-white/10 bg-white/5 shadow-ember backdrop-blur"
-                        asChild={false}
                       >
                         <motion.div
                           initial={
